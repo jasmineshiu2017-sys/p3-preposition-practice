@@ -3,6 +3,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -487,9 +489,22 @@ els.restartBtn.addEventListener("click", () => {
   els.startPanel.classList.remove("hidden");
 });
 els.parentLoginBtn.addEventListener("click", async () => {
-  await signInWithPopup(auth, new GoogleAuthProvider());
+  const provider = new GoogleAuthProvider();
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    if (error.code === "auth/popup-blocked" || error.code === "auth/cancelled-popup-request") {
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+    els.parentStatus.textContent = `Login failed. ${error.message}`;
+  }
 });
 els.parentLogoutBtn.addEventListener("click", () => signOut(auth));
+
+getRedirectResult(auth).catch(error => {
+  els.parentStatus.textContent = `Login failed. ${error.message}`;
+});
 
 onAuthStateChanged(auth, user => {
   els.parentLoginBtn.classList.toggle("hidden", Boolean(user));
