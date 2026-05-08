@@ -239,12 +239,8 @@ const els = {
   pageTitle: document.querySelector("#pageTitle"),
   progressText: document.querySelector("#progressText"),
   liveScore: document.querySelector("#liveScore"),
-  progressBar: document.querySelector("#progressBar"),
   questionList: document.querySelector("#questionList"),
   pageFeedback: document.querySelector("#pageFeedback"),
-  prevBtn: document.querySelector("#prevBtn"),
-  checkBtn: document.querySelector("#checkBtn"),
-  nextBtn: document.querySelector("#nextBtn"),
   finishBtn: document.querySelector("#finishBtn"),
   finalCorrect: document.querySelector("#finalCorrect"),
   finalWrong: document.querySelector("#finalWrong"),
@@ -257,6 +253,8 @@ const els = {
   summaryCards: document.querySelector("#summaryCards"),
   attemptTable: document.querySelector("#attemptTable"),
   attemptRows: document.querySelector("#attemptRows"),
+  wrongStatsPanel: document.querySelector("#wrongStatsPanel"),
+  wrongStatsRows: document.querySelector("#wrongStatsRows"),
   totalAttempts: document.querySelector("#totalAttempts"),
   avgScore: document.querySelector("#avgScore"),
   latestScore: document.querySelector("#latestScore")
@@ -264,7 +262,6 @@ const els = {
 
 let state = {
   questions: [],
-  page: 0,
   student: { name: "", className: "" }
 };
 
@@ -283,7 +280,7 @@ function shuffle(items) {
 
 function makeQuestionSet() {
   const pool = shuffle(buildExpandedPool());
-  return pool.slice(0, 100).map((base, i) => ({
+  return pool.slice(0, 10).map((base, i) => ({
       ...base,
       id: `${Date.now()}-${i}-${Math.random().toString(16).slice(2)}`,
       userAnswer: "",
@@ -301,17 +298,12 @@ function switchView(view) {
 }
 
 function renderPage() {
-  const start = state.page * 10;
-  const pageItems = state.questions.slice(start, start + 10);
-  els.pageTitle.textContent = `Page ${state.page + 1} of 10`;
-  els.progressText.textContent = `Questions ${start + 1}-${start + pageItems.length}`;
-  els.progressBar.style.width = `${(state.page + 1) * 10}%`;
-  els.prevBtn.disabled = state.page === 0;
-  els.nextBtn.classList.toggle("hidden", state.page === 9);
-  els.finishBtn.classList.toggle("hidden", state.page !== 9);
+  const pageItems = state.questions;
+  els.pageTitle.textContent = "Round Practice";
+  els.progressText.textContent = "10 random questions";
   els.pageFeedback.classList.add("hidden");
   els.questionList.innerHTML = pageItems.map((q, offset) => {
-    const index = start + offset;
+    const index = offset;
     const statusClass = q.checked ? (q.correct ? "correct" : "wrong") : "";
     const note = q.checked
       ? (q.correct ? "Correct" : `Wrong. Answer: ${q.answer}`)
@@ -321,6 +313,7 @@ function renderPage() {
         <div class="sentence"><strong>${index + 1}.</strong> ${q.sentence.replace("___", '<span class="blank"></span>')}</div>
         <div class="answer-row">
           <input data-index="${index}" value="${q.userAnswer}" placeholder="Answer">
+          <button class="check-one" type="button" data-check-index="${index}">Check</button>
           <span class="answer-note">${note}</span>
         </div>
         <p class="small">${q.source}</p>
@@ -336,19 +329,12 @@ function syncAnswers() {
   });
 }
 
-function checkCurrentPage() {
+function checkQuestion(index) {
   syncAnswers();
-  const start = state.page * 10;
-  const pageItems = state.questions.slice(start, start + 10);
-  pageItems.forEach(q => {
-    q.checked = true;
-    q.correct = normalize(q.userAnswer) === normalize(q.answer);
-  });
-  const correct = pageItems.filter(q => q.correct).length;
-  els.pageFeedback.textContent = `This page: ${correct} correct, ${10 - correct} wrong.`;
-  els.pageFeedback.classList.remove("hidden");
+  const question = state.questions[index];
+  question.checked = true;
+  question.correct = normalize(question.userAnswer) === normalize(question.answer);
   renderPage();
-  els.pageFeedback.classList.remove("hidden");
 }
 
 function syncLiveScore() {
@@ -385,7 +371,8 @@ async function finishQuiz() {
     correct: summary.correct,
     wrong: summary.wrong,
     score: summary.score,
-    total: 100,
+    total: 10,
+    roundSize: 10,
     createdAt: serverTimestamp(),
     questions: state.questions.map(q => ({
       sentence: q.sentence,
@@ -416,7 +403,6 @@ function startQuiz() {
   }
   state = {
     questions: makeQuestionSet(),
-    page: 0,
     student: { name, className }
   };
   els.startPanel.classList.add("hidden");
@@ -443,11 +429,13 @@ function renderAttempts(rows) {
     els.parentStatus.textContent = "Logged in. No attempts found yet.";
     els.summaryCards.classList.add("hidden");
     els.attemptTable.classList.add("hidden");
+    els.wrongStatsPanel.classList.add("hidden");
     return;
   }
   els.parentStatus.textContent = "Logged in. Results loaded.";
   els.summaryCards.classList.remove("hidden");
   els.attemptTable.classList.remove("hidden");
+  renderWrongStats(rows);
   const avg = Math.round(rows.reduce((sum, row) => sum + Number(row.score || 0), 0) / rows.length);
   els.totalAttempts.textContent = rows.length;
   els.avgScore.textContent = `${avg}%`;
@@ -468,19 +456,49 @@ function renderAttempts(rows) {
   }).join("");
 }
 
+function renderWrongStats(rows) {
+  const stats = new Map();
+  rows.forEach(row => {
+    (row.questions || []).forEach(question => {
+      if (question.correct) return;
+      const key = `${question.sentence}|${question.answer}`;
+      const current = stats.get(key) || {
+        sentence: question.sentence,
+        answer: question.answer,
+        wrong: 0
+      };
+      current.wrong += 1;
+      stats.set(key, current);
+    });
+  });
+
+  const ranked = [...stats.values()]
+    .sort((a, b) => b.wrong - a.wrong || a.sentence.localeCompare(b.sentence))
+    .slice(0, 10);
+
+  if (!ranked.length) {
+    els.wrongStatsPanel.classList.add("hidden");
+    els.wrongStatsRows.innerHTML = "";
+    return;
+  }
+
+  els.wrongStatsPanel.classList.remove("hidden");
+  els.wrongStatsRows.innerHTML = ranked.map(item => `
+    <tr>
+      <td>${item.sentence.replace("___", '<span class="mini-blank"></span>')}</td>
+      <td>${item.answer}</td>
+      <td>${item.wrong}</td>
+    </tr>
+  `).join("");
+}
+
 els.studentTab.addEventListener("click", () => switchView("student"));
 els.parentTab.addEventListener("click", () => switchView("parent"));
 els.startBtn.addEventListener("click", startQuiz);
-els.checkBtn.addEventListener("click", checkCurrentPage);
-els.prevBtn.addEventListener("click", () => {
-  syncAnswers();
-  state.page = Math.max(0, state.page - 1);
-  renderPage();
-});
-els.nextBtn.addEventListener("click", () => {
-  syncAnswers();
-  state.page = Math.min(9, state.page + 1);
-  renderPage();
+els.questionList.addEventListener("click", event => {
+  const button = event.target.closest("[data-check-index]");
+  if (!button) return;
+  checkQuestion(Number(button.dataset.checkIndex));
 });
 els.finishBtn.addEventListener("click", finishQuiz);
 els.restartBtn.addEventListener("click", () => {
@@ -511,5 +529,6 @@ onAuthStateChanged(auth, user => {
     els.parentStatus.textContent = "Not logged in.";
     els.summaryCards.classList.add("hidden");
     els.attemptTable.classList.add("hidden");
+    els.wrongStatsPanel.classList.add("hidden");
   }
 });

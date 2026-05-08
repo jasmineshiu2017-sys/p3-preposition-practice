@@ -32,26 +32,22 @@
             <input id="studentClass" autocomplete="off" placeholder="e.g. P3A">
           </label>
         </div>
-        <p class="small">100 random questions. 10 questions per page. Type the missing preposition or phrase.</p>
-        <button id="startBtn" class="primary" type="button">Start 100 Questions</button>
+        <p class="small">10 random questions per round. Type the missing preposition, then check each answer.</p>
+        <button id="startBtn" class="primary" type="button">Start 10 Questions</button>
       </section>
 
       <section id="quizPanel" class="panel hidden">
         <div class="quiz-head">
           <div>
-            <h2 id="pageTitle">Page 1 of 10</h2>
-            <p id="progressText" class="small">Questions 1-10</p>
+            <h2 id="pageTitle">Round Practice</h2>
+            <p id="progressText" class="small">10 questions</p>
           </div>
-          <div class="score-pill"><span id="liveScore">0</span>/100 correct</div>
+          <div class="score-pill"><span id="liveScore">0</span>/10 correct</div>
         </div>
-        <div class="progress"><div id="progressBar"></div></div>
         <form id="questionList" class="questions"></form>
         <div id="pageFeedback" class="feedback hidden"></div>
         <div class="actions">
-          <button id="prevBtn" type="button">Previous</button>
-          <button id="checkBtn" class="primary" type="button">Check This Page</button>
-          <button id="nextBtn" type="button">Next Page</button>
-          <button id="finishBtn" class="primary hidden" type="button">Finish and Save</button>
+          <button id="finishBtn" class="primary" type="button">Finish and Save</button>
         </div>
       </section>
 
@@ -63,7 +59,7 @@
           <div><strong id="finalPercent">0%</strong><span>Score</span></div>
         </div>
         <p id="saveStatus" class="small"></p>
-        <button id="restartBtn" class="primary" type="button">Try Another 100</button>
+        <button id="restartBtn" class="primary" type="button">Try Another Round</button>
       </section>
     </section>
 
@@ -72,17 +68,32 @@
         <div class="quiz-head">
           <div>
             <h2>Parent Dashboard</h2>
-            <p class="small">Log in with Google to see saved attempts from Firebase.</p>
+            <p class="small">Log in with Google to see each saved 10-question round from Firebase.</p>
           </div>
           <button id="parentLoginBtn" class="primary" type="button">Log in</button>
           <button id="parentLogoutBtn" class="hidden" type="button">Log out</button>
         </div>
         <div id="parentStatus" class="notice">Not logged in.</div>
         <div id="summaryCards" class="result-grid compact hidden">
-          <div><strong id="totalAttempts">0</strong><span>Attempts</span></div>
+          <div><strong id="totalAttempts">0</strong><span>Rounds</span></div>
           <div><strong id="avgScore">0%</strong><span>Average</span></div>
           <div><strong id="latestScore">0%</strong><span>Latest</span></div>
         </div>
+        <section id="wrongStatsPanel" class="stats-panel hidden">
+          <h3>Most Wrong Questions</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Answer</th>
+                  <th>Wrong</th>
+                </tr>
+              </thead>
+              <tbody id="wrongStatsRows"></tbody>
+            </table>
+          </div>
+        </section>
         <div class="table-wrap">
           <table id="attemptTable" class="hidden">
             <thead>
