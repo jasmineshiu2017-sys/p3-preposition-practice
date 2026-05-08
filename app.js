@@ -233,8 +233,6 @@ const els = {
   startPanel: document.querySelector("#startPanel"),
   quizPanel: document.querySelector("#quizPanel"),
   resultPanel: document.querySelector("#resultPanel"),
-  studentName: document.querySelector("#studentName"),
-  studentClass: document.querySelector("#studentClass"),
   startBtn: document.querySelector("#startBtn"),
   pageTitle: document.querySelector("#pageTitle"),
   progressText: document.querySelector("#progressText"),
@@ -395,15 +393,9 @@ async function finishQuiz() {
 }
 
 function startQuiz() {
-  const name = els.studentName.value.trim();
-  const className = els.studentClass.value.trim();
-  if (!name || !className) {
-    alert("Please enter student name and class.");
-    return;
-  }
   state = {
     questions: makeQuestionSet(),
-    student: { name, className }
+    student: { name: "Guest", className: "" }
   };
   els.startPanel.classList.add("hidden");
   els.resultPanel.classList.add("hidden");
