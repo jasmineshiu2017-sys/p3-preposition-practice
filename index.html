@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P3 Preposition Practice</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>P3 Preposition Practice</h1>
+      <p>Supp 8 + Supp 9 phrase practice</p>
+    </div>
+    <nav>
+      <button id="studentTab" class="nav-btn active" type="button">Student</button>
+      <button id="parentTab" class="nav-btn" type="button">Parent</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="studentView" class="view active">
+      <section id="startPanel" class="panel">
+        <h2>Start Practice</h2>
+        <div class="form-grid">
+          <label>
+            Student name
+            <input id="studentName" autocomplete="name" placeholder="e.g. Jasmine">
+          </label>
+          <label>
+            Class
+            <input id="studentClass" autocomplete="off" placeholder="e.g. P3A">
+          </label>
+        </div>
+        <p class="small">100 random questions. 10 questions per page. Type the missing preposition or phrase.</p>
+        <button id="startBtn" class="primary" type="button">Start 100 Questions</button>
+      </section>
+
+      <section id="quizPanel" class="panel hidden">
+        <div class="quiz-head">
+          <div>
+            <h2 id="pageTitle">Page 1 of 10</h2>
+            <p id="progressText" class="small">Questions 1-10</p>
+          </div>
+          <div class="score-pill"><span id="liveScore">0</span>/100 correct</div>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <form id="questionList" class="questions"></form>
+        <div id="pageFeedback" class="feedback hidden"></div>
+        <div class="actions">
+          <button id="prevBtn" type="button">Previous</button>
+          <button id="checkBtn" class="primary" type="button">Check This Page</button>
+          <button id="nextBtn" type="button">Next Page</button>
+          <button id="finishBtn" class="primary hidden" type="button">Finish and Save</button>
+        </div>
+      </section>
+
+      <section id="resultPanel" class="panel hidden">
+        <h2>Result</h2>
+        <div class="result-grid">
+          <div><strong id="finalCorrect">0</strong><span>Correct</span></div>
+          <div><strong id="finalWrong">0</strong><span>Wrong</span></div>
+          <div><strong id="finalPercent">0%</strong><span>Score</span></div>
+        </div>
+        <p id="saveStatus" class="small"></p>
+        <button id="restartBtn" class="primary" type="button">Try Another 100</button>
+      </section>
+    </section>
+
+    <section id="parentView" class="view">
+      <section class="panel">
+        <div class="quiz-head">
+          <div>
+            <h2>Parent Dashboard</h2>
+            <p class="small">Log in with Google to see saved attempts from Firebase.</p>
+          </div>
+          <button id="parentLoginBtn" class="primary" type="button">Log in</button>
+          <button id="parentLogoutBtn" class="hidden" type="button">Log out</button>
+        </div>
+        <div id="parentStatus" class="notice">Not logged in.</div>
+        <div id="summaryCards" class="result-grid compact hidden">
+          <div><strong id="totalAttempts">0</strong><span>Attempts</span></div>
+          <div><strong id="avgScore">0%</strong><span>Average</span></div>
+          <div><strong id="latestScore">0%</strong><span>Latest</span></div>
+        </div>
+        <div class="table-wrap">
+          <table id="attemptTable" class="hidden">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Correct</th>
+                <th>Wrong</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody id="attemptRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
