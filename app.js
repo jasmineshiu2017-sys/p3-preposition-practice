@@ -3,6 +3,8 @@ import {
   getFirestore,
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   orderBy,
   query,
@@ -245,6 +247,8 @@ const els = {
   summaryCards: document.querySelector("#summaryCards"),
   attemptTable: document.querySelector("#attemptTable"),
   attemptRows: document.querySelector("#attemptRows"),
+  recordActions: document.querySelector("#recordActions"),
+  deleteSelectedBtn: document.querySelector("#deleteSelectedBtn"),
   wrongStatsPanel: document.querySelector("#wrongStatsPanel"),
   wrongStatsRows: document.querySelector("#wrongStatsRows"),
   prepositionStatsPanel: document.querySelector("#prepositionStatsPanel"),
@@ -419,6 +423,7 @@ function renderAttempts(rows) {
     els.parentStatus.textContent = "Logged in. No attempts found yet.";
     els.summaryCards.classList.add("hidden");
     els.attemptTable.classList.add("hidden");
+    els.recordActions.classList.add("hidden");
     els.wrongStatsPanel.classList.add("hidden");
     els.prepositionStatsPanel.classList.add("hidden");
     return;
@@ -426,6 +431,7 @@ function renderAttempts(rows) {
   els.parentStatus.textContent = "Logged in. Results loaded.";
   els.summaryCards.classList.remove("hidden");
   els.attemptTable.classList.remove("hidden");
+  els.recordActions.classList.remove("hidden");
   renderWrongStats(rows);
   renderPrepositionStats(rows);
   const avg = Math.round(rows.reduce((sum, row) => sum + Number(row.score || 0), 0) / rows.length);
@@ -437,6 +443,7 @@ function renderAttempts(rows) {
     const date = created ? created.toLocaleString() : "Just now";
     return `
       <tr>
+        <td><input class="record-check" type="checkbox" value="${row.id}" aria-label="Select record from ${date}"></td>
         <td>${date}</td>
         <td>${row.correct || 0}</td>
         <td>${row.wrong || 0}</td>
@@ -480,6 +487,28 @@ function renderWrongStats(rows) {
       <td>${item.wrong}</td>
     </tr>
   `).join("");
+}
+
+async function deleteSelectedRecords() {
+  const selected = [...els.attemptRows.querySelectorAll(".record-check:checked")].map(input => input.value);
+  if (!selected.length) {
+    els.parentStatus.textContent = "Please select at least one record to delete.";
+    return;
+  }
+  const ok = confirm(`Delete ${selected.length} selected record(s)?`);
+  if (!ok) return;
+
+  els.deleteSelectedBtn.disabled = true;
+  els.parentStatus.textContent = "Deleting selected records...";
+  try {
+    await Promise.all(selected.map(id => deleteDoc(doc(db, "prepositionAttempts", id))));
+    els.parentStatus.textContent = "Selected records deleted.";
+    await loadAttempts();
+  } catch (error) {
+    els.parentStatus.textContent = `Could not delete records. ${error.message}`;
+  } finally {
+    els.deleteSelectedBtn.disabled = false;
+  }
 }
 
 function renderPrepositionStats(rows) {
@@ -550,6 +579,7 @@ els.parentLogoutBtn.addEventListener("click", () => {
   sessionStorage.removeItem("parentLoggedIn");
   renderParentAuth();
 });
+els.deleteSelectedBtn.addEventListener("click", deleteSelectedRecords);
 
 function renderParentAuth() {
   els.parentLoginForm.classList.toggle("hidden", parentLoggedIn);
@@ -561,6 +591,7 @@ function renderParentAuth() {
   els.parentStatus.textContent = "Not logged in.";
   els.summaryCards.classList.add("hidden");
   els.attemptTable.classList.add("hidden");
+  els.recordActions.classList.add("hidden");
   els.wrongStatsPanel.classList.add("hidden");
   els.prepositionStatsPanel.classList.add("hidden");
 }

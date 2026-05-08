@@ -61,6 +61,15 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   color: white;
 }
 .primary:hover { background: var(--accent-dark); }
+.danger {
+  background: #b42318;
+  border-color: #b42318;
+  color: #fff;
+}
+.danger:hover {
+  background: #911b12;
+  border-color: #911b12;
+}
 .nav-btn.active {
   background: #e8f5f1;
   border-color: var(--accent);
@@ -117,6 +126,12 @@ input {
 input:focus {
   border-color: var(--accent);
   outline: 3px solid rgba(20, 125, 100, .16);
+}
+
+input[type="checkbox"] {
+  width: 20px;
+  min-height: 20px;
+  accent-color: var(--accent);
 }
 
 .quiz-head {
