@@ -253,6 +253,8 @@ const els = {
   attemptRows: document.querySelector("#attemptRows"),
   wrongStatsPanel: document.querySelector("#wrongStatsPanel"),
   wrongStatsRows: document.querySelector("#wrongStatsRows"),
+  prepositionStatsPanel: document.querySelector("#prepositionStatsPanel"),
+  prepositionStatsRows: document.querySelector("#prepositionStatsRows"),
   totalAttempts: document.querySelector("#totalAttempts"),
   avgScore: document.querySelector("#avgScore"),
   latestScore: document.querySelector("#latestScore")
@@ -422,12 +424,14 @@ function renderAttempts(rows) {
     els.summaryCards.classList.add("hidden");
     els.attemptTable.classList.add("hidden");
     els.wrongStatsPanel.classList.add("hidden");
+    els.prepositionStatsPanel.classList.add("hidden");
     return;
   }
   els.parentStatus.textContent = "Logged in. Results loaded.";
   els.summaryCards.classList.remove("hidden");
   els.attemptTable.classList.remove("hidden");
   renderWrongStats(rows);
+  renderPrepositionStats(rows);
   const avg = Math.round(rows.reduce((sum, row) => sum + Number(row.score || 0), 0) / rows.length);
   els.totalAttempts.textContent = rows.length;
   els.avgScore.textContent = `${avg}%`;
@@ -438,8 +442,6 @@ function renderAttempts(rows) {
     return `
       <tr>
         <td>${date}</td>
-        <td>${row.studentName || ""}</td>
-        <td>${row.studentClass || ""}</td>
         <td>${row.correct || 0}</td>
         <td>${row.wrong || 0}</td>
         <td>${row.score || 0}%</td>
@@ -484,6 +486,41 @@ function renderWrongStats(rows) {
   `).join("");
 }
 
+function renderPrepositionStats(rows) {
+  const stats = new Map();
+  rows.forEach(row => {
+    (row.questions || []).forEach(question => {
+      if (question.correct) return;
+      const answer = question.answer || "";
+      const current = stats.get(answer) || {
+        answer,
+        wrong: 0,
+        example: question.sentence
+      };
+      current.wrong += 1;
+      stats.set(answer, current);
+    });
+  });
+
+  const ranked = [...stats.values()]
+    .sort((a, b) => b.wrong - a.wrong || a.answer.localeCompare(b.answer));
+
+  if (!ranked.length) {
+    els.prepositionStatsPanel.classList.add("hidden");
+    els.prepositionStatsRows.innerHTML = "";
+    return;
+  }
+
+  els.prepositionStatsPanel.classList.remove("hidden");
+  els.prepositionStatsRows.innerHTML = ranked.map(item => `
+    <tr>
+      <td><strong>${item.answer}</strong></td>
+      <td>${item.wrong}</td>
+      <td>${item.example.replace("___", '<span class="mini-blank"></span>')}</td>
+    </tr>
+  `).join("");
+}
+
 els.studentTab.addEventListener("click", () => switchView("student"));
 els.parentTab.addEventListener("click", () => switchView("parent"));
 els.startBtn.addEventListener("click", startQuiz);
@@ -522,5 +559,6 @@ onAuthStateChanged(auth, user => {
     els.summaryCards.classList.add("hidden");
     els.attemptTable.classList.add("hidden");
     els.wrongStatsPanel.classList.add("hidden");
+    els.prepositionStatsPanel.classList.add("hidden");
   }
 });
