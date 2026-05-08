@@ -73,6 +73,7 @@ main {
 }
 
 .view, .hidden { display: none; }
+.login-form.hidden { display: none; }
 .view.active { display: block; }
 
 .panel {
@@ -87,6 +88,14 @@ main {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  margin: 16px 0;
+}
+
+.login-form {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
   margin: 16px 0;
 }
 
@@ -258,7 +267,7 @@ th {
   }
   nav, .actions { width: 100%; }
   nav button, .actions button { flex: 1; }
-  .form-grid, .answer-row, .result-grid {
+  .form-grid, .login-form, .answer-row, .result-grid {
     grid-template-columns: 1fr;
   }
   .sentence { font-size: 16px; }

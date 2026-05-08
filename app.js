@@ -1,13 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
   getFirestore,
   addDoc,
   collection,
@@ -27,7 +19,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
 const templates = [
@@ -247,6 +238,9 @@ const els = {
   restartBtn: document.querySelector("#restartBtn"),
   parentLoginBtn: document.querySelector("#parentLoginBtn"),
   parentLogoutBtn: document.querySelector("#parentLogoutBtn"),
+  parentLoginForm: document.querySelector("#parentLoginForm"),
+  parentUsername: document.querySelector("#parentUsername"),
+  parentPassword: document.querySelector("#parentPassword"),
   parentStatus: document.querySelector("#parentStatus"),
   summaryCards: document.querySelector("#summaryCards"),
   attemptTable: document.querySelector("#attemptTable"),
@@ -264,6 +258,8 @@ let state = {
   questions: [],
   student: { name: "", className: "" }
 };
+
+let parentLoggedIn = sessionStorage.getItem("parentLoggedIn") === "true";
 
 function normalize(value) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
@@ -534,31 +530,42 @@ els.restartBtn.addEventListener("click", () => {
   els.resultPanel.classList.add("hidden");
   els.startPanel.classList.remove("hidden");
 });
-els.parentLoginBtn.addEventListener("click", async () => {
-  const provider = new GoogleAuthProvider();
-  try {
-    await signInWithRedirect(auth, provider);
-  } catch (error) {
-    els.parentStatus.textContent = `Login failed. ${error.message}`;
-  }
-});
-els.parentLogoutBtn.addEventListener("click", () => signOut(auth));
 
-getRedirectResult(auth).catch(error => {
-  els.parentStatus.textContent = `Login failed. ${error.message}`;
-});
-
-onAuthStateChanged(auth, user => {
-  els.parentLoginBtn.classList.toggle("hidden", Boolean(user));
-  els.parentLogoutBtn.classList.toggle("hidden", !user);
-  if (user) {
-    els.parentStatus.textContent = `Logged in as ${user.email}`;
+els.parentLoginForm.addEventListener("submit", event => {
+  event.preventDefault();
+  const username = els.parentUsername.value.trim();
+  const password = els.parentPassword.value;
+  if (username === "admin" && password === "admin") {
+    parentLoggedIn = true;
+    sessionStorage.setItem("parentLoggedIn", "true");
+    renderParentAuth();
     loadAttempts();
-  } else {
-    els.parentStatus.textContent = "Not logged in.";
-    els.summaryCards.classList.add("hidden");
-    els.attemptTable.classList.add("hidden");
-    els.wrongStatsPanel.classList.add("hidden");
-    els.prepositionStatsPanel.classList.add("hidden");
+    return;
   }
+  els.parentStatus.textContent = "Wrong username or password.";
 });
+
+els.parentLogoutBtn.addEventListener("click", () => {
+  parentLoggedIn = false;
+  sessionStorage.removeItem("parentLoggedIn");
+  renderParentAuth();
+});
+
+function renderParentAuth() {
+  els.parentLoginForm.classList.toggle("hidden", parentLoggedIn);
+  els.parentLogoutBtn.classList.toggle("hidden", !parentLoggedIn);
+  if (parentLoggedIn) {
+    els.parentStatus.textContent = "Logged in as admin.";
+    return;
+  }
+  els.parentStatus.textContent = "Not logged in.";
+  els.summaryCards.classList.add("hidden");
+  els.attemptTable.classList.add("hidden");
+  els.wrongStatsPanel.classList.add("hidden");
+  els.prepositionStatsPanel.classList.add("hidden");
+}
+
+renderParentAuth();
+if (parentLoggedIn) {
+  loadAttempts();
+}

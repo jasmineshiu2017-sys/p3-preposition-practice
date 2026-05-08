@@ -58,11 +58,21 @@
         <div class="quiz-head">
           <div>
             <h2>Parent Dashboard</h2>
-            <p class="small">Log in with Google to see each saved 10-question round from Firebase.</p>
+            <p class="small">Log in to see each saved 10-question round from Firebase.</p>
           </div>
-          <button id="parentLoginBtn" class="primary" type="button">Log in</button>
           <button id="parentLogoutBtn" class="hidden" type="button">Log out</button>
         </div>
+        <form id="parentLoginForm" class="login-form">
+          <label>
+            Username
+            <input id="parentUsername" autocomplete="username" placeholder="admin">
+          </label>
+          <label>
+            Password
+            <input id="parentPassword" autocomplete="current-password" placeholder="admin" type="password">
+          </label>
+          <button id="parentLoginBtn" class="primary" type="submit">Log in</button>
+        </form>
         <div id="parentStatus" class="notice">Not logged in.</div>
         <div id="summaryCards" class="result-grid compact hidden">
           <div><strong id="totalAttempts">0</strong><span>Rounds</span></div>
