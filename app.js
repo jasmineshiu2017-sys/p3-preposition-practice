@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/fireba
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   signOut,
@@ -491,12 +490,8 @@ els.restartBtn.addEventListener("click", () => {
 els.parentLoginBtn.addEventListener("click", async () => {
   const provider = new GoogleAuthProvider();
   try {
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   } catch (error) {
-    if (error.code === "auth/popup-blocked" || error.code === "auth/cancelled-popup-request") {
-      await signInWithRedirect(auth, provider);
-      return;
-    }
     els.parentStatus.textContent = `Login failed. ${error.message}`;
   }
 });
